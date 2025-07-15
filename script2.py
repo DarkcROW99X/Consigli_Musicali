@@ -28,10 +28,10 @@ threading.Thread(target=run_dummy_server, daemon=True).start()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_REPO = os.getenv("GITHUB_REPO")  # es: username/repo
-GITHUB_FILE_PATH = os.getenv("GITHUB_FILE_PATH", "user_artists.json")
-GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
+TOKEN_GITHUB = os.getenv("TOKEN_GITHUB")
+REPO_GITHUB = os.getenv("REPO_GITHUB")  # es: username/repo
+FILE_PATH_GITHUB = os.getenv("FILE_PATH_GITHUB", "user_artists.json")
+BRANCH_GITHUB = os.getenv("BRANCH_GITHUB", "main")
 
 client_credentials_manager = SpotifyClientCredentials(
     client_id=SPOTIFY_CLIENT_ID,
@@ -41,8 +41,8 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 # --- GitHub interaction functions ---
 def github_get_file_sha():
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_FILE_PATH}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    url = f"https://api.github.com/repos/{REPO_GITHUB}/contents/{FILE_PATH_GITHUB}"
+    headers = {"Authorization": f"token {TOKEN_GITHUB}"}
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         return r.json().get("sha")
@@ -53,16 +53,16 @@ def github_commit_file(content_json):
     content_b64 = base64.b64encode(content_bytes).decode("utf-8")
     sha = github_get_file_sha()
 
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{GITHUB_FILE_PATH}"
+    url = f"https://api.github.com/repos/{REPO_GITHUB}/contents/{FILE_PATH_GITHUB}"
     headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
+        "Authorization": f"token {TOKEN_GITHUB}",
         "Accept": "application/vnd.github+json"
     }
 
     payload = {
         "message": "Aggiornamento artisti preferiti",
         "content": content_b64,
-        "branch": GITHUB_BRANCH
+        "branch": BRANCH_GITHUB
     }
 
     if sha:
