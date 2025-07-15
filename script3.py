@@ -73,11 +73,15 @@ def github_commit_file(content_json):
 
 # --- Gestione file utenti ---
 def load_user_artists():
-    try:
-        with open("user_artists.json", "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
+    if not os.path.exists("user_artists.json"):
         return {}
+
+    with open("user_artists.json", "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
 
 def save_user_artists(data):
     with open("user_artists.json", "w") as f:
@@ -161,9 +165,11 @@ def listartists(update: Update, context: CallbackContext):
 
     artists = "\n".join(f"- {a}" for a in user_artists[user_id])
     update.message.reply_text(f"🎨 I tuoi artisti:\n{artists}")
+
+
 def recommend(update: Update, context: CallbackContext):
     user_id = str(update.effective_user.id)
-    data = load_user_preferences()
+    data = load_user_artists()
     artists = data.get(user_id, [])
     
     if not artists:
